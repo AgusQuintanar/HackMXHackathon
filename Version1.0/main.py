@@ -76,47 +76,35 @@ def arbol(palabras):
     arbol=Arbol()
 
 
+    diccionario = {"urgente":[5, "Ninguna institución bancaria utiliza este tipo de lenguaje alarmante."], "importante":[3, ""], "pago":[3, ""], "cargo":[5, "Verificar directamente con su banco este mismo."], "deuda":[4,""], "inmediatamente":[3, "Ninguna institución bancaria utiliza este tipo de lenguaje alarmante."],
+                   "seguridad":[2, ""], "alerta":[2, ""],"intento":[1, ""],"contraseña":[3, "Ninguna institucion o agente bancario debe solicitarte este tipo de información."],"pin":[5, "Ninguna institucion o agente bancario debe solicitarte este tipo de información."],"cvv":[5, "Ninguna institucion o agente bancario debe solicitarte este tipo de información."],"bloqueado":[4, "Verificar directamente con tu banco dichas acciones."],
+                   "bloqueada":[4, "Verificar directamente con tu banco dichas acciones."],"tarjeta":[3, ""],"premio":[4, "Desconfía de recompensas inesperadas o desconocidas."],"ganaste":[4, "Desconfía de recompensas inesperadas o desconocidas."],"loteria":[4, "Desconfía de recompensas inesperadas o desconocidas."],"valida":[2, ""],"cambie":[1,""],
+                   "falló":[2, ""],"desorden":[1, ""],"contacto":[2, ""],"fraudulenta":[3, "Realiza una doble verificación directamente con tu banco, sobre movimientos sospechosos"]}
 
-
-    arbol.insertar("urgente",5)
-    arbol.insertar("importante",3)
-    arbol.insertar("pago",3)
-    arbol.insertar("cargo",5)
-    arbol.insertar("deuda",4)
-    arbol.insertar("inmediatamente",3)
-    arbol.insertar("seguridad",2)
-    arbol.insertar("alerta",2)
-    arbol.insertar("intento",1)
-    arbol.insertar("contraseña",3)
-    arbol.insertar("pin",5)
-    arbol.insertar("cvv",5)
-    arbol.insertar("bloqueado",4)
-    arbol.insertar("bloqueada",4)
-    arbol.insertar("tarjeta",3)
-    arbol.insertar("premio",4)
-    arbol.insertar("loteria",4)
-    arbol.insertar("valida",2)
-    arbol.insertar("cambie",1)
-    arbol.insertar("falló",2)
-    arbol.insertar("desorden",1)
-    arbol.insertar("contacto",2)
-    arbol.insertar("fraudulenta",3)
+    for palabra in diccionario:
+        arbol.insertar(palabra, diccionario[palabra][0])
 
     for x in palabras:
         arbol.buscar(x)
 
     if arbol.contadorPeligro > 0:
-        print('Existe una alta probabilidad de que este sitio contenga Phishing')
+        print('\nExiste una alta probabilidad de que este correo contenga Phishing')
+        texto = ""
+        for x in palabras:
+            if x in diccionario:
+                texto += diccionario[x][1] + '\n'
+        print(texto)
     else:
-        print('Existe una baja probabilidad de que este sitio contenga Phishing')
+        print('\nExiste una baja probabilidad de que este correo contenga Phishing')
 
 
 def checarUrl(x_predict):
+    x_predict_temp = x_predict
     data = pd.read_csv("urldata.csv")
 
     num_good = data.label.value_counts()["good"]
     num_bad = data.label.value_counts()["bad"]
-    print("Porcentaje de links malos en el dataset",num_bad/num_good, "\n")
+   
 
     #Shuffle del data set y verificar que la proporción es cercana a la orginal
 
@@ -125,7 +113,7 @@ def checarUrl(x_predict):
 
     num_good = df.label.value_counts()["good"]
     num_bad = df.label.value_counts()["bad"]
-    print("Porcentaje de links malos en el nuevo dataset", num_bad/num_good, "\n")
+   
 
     def maketokens(f):
         tkns_slash = str(f.encode("utf-8")).split("/")
@@ -154,7 +142,9 @@ def checarUrl(x_predict):
     #Ejemplo de la predicción
     x_predict = vectorizer.transform(x_predict)
     New_predict = logit.predict(x_predict)
-    print(New_predict)
+   
+    for url in range(len(x_predict_temp)):
+        print("URL: " + x_predict_temp[url] + ': ' + (' '.join(New_predict)).split(' ')[url])
 
 def leerEmail():
     SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
@@ -174,25 +164,20 @@ def leerEmail():
     else:
         msg = service.users().messages().get(userId='me', id=messages[0]['id']).execute() #Ultimo mensaje recibido
         correo = msg['snippet']
-
-        
-
-        #urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', correo)
+        print("Correo: ",correo)
         urls = re.findall('(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+', correo)
         correo = correo.split()
         palabras = [(correo[x].lower()) for x in range(len(correo)) if correo[x] not in urls ]
-        print("Correo: ",correo)
         print("Urls: ",urls)
         print("Palabras: ",palabras)
     return [urls, palabras]
 
 
-
-
 def main():
     leer_email = leerEmail()
     arbol(leer_email[1])
-    checarUrl(leer_email[0])
+    if len(leer_email[0]) > 1:
+        checarUrl(leer_email[0])
 
 main()
 
