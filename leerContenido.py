@@ -1,32 +1,54 @@
+"""Get Message with given ID.
+"""
+
+import base64
+import email
+from apiclient import errors
+
+def GetMessage(service, user_id, msg_id):
+  """Get a Message with given ID.
+
+  Args:
+    service: Authorized Gmail API service instance.
+    user_id: User's email address. The special value "me"
+    can be used to indicate the authenticated user.
+    msg_id: The ID of the Message required.
+
+  Returns:
+    A Message.
+  """
+  try:
+    message = service.users().messages().get(userId=user_id, id=msg_id).execute()
+
+    print('Message snippet: %s' % message['snippet'])
+
+    return message
+  except errors.HttpError:
+    print('An error occurred: %s' % error)
 
 
+def GetMimeMessage(service, user_id, msg_id):
+  """Get a Message and use it to create a MIME Message.
 
-import imaplib
-from email.parser import HeaderParser
-M = imaplib.IMAP4_SSL("imap.gmail.com")
-user = "hackmx.prueba1@gmail.com"
-password = "buttercorp"
-M.login(user, password)
-(retcode, messages) = M.sort("DATE", 'UTF-8', 'ALL')
-news_mail = get_mostnew_email(messages)
-for i in news_mail :
-    data = M.fetch(i, '(BODY[HEADER])')
-    header_data = data[1][0][1]
-    parser = HeaderParser()
-    msg = parser.parsestr(header_data)
-    print(msg['subject'])
+  Args:
+    service: Authorized Gmail API service instance.
+    user_id: User's email address. The special value "me"
+    can be used to indicate the authenticated user.
+    msg_id: The ID of the Message required.
 
-def get_mostnew_email(messages):
-    """
-    Getting in most recent emails using IMAP and Python
-    :param messages:
-    :return:
-    """
-    ids = messages[0]  # data is a list.
-    id_list = ids.split()  # ids is a space separated string
-    #latest_ten_email_id = id_list  # get all
-    latest_ten_email_id = id_list[-10:]  # get the latest 10
-    keys = map(int, latest_ten_email_id)
-    news_keys = sorted(keys, reverse=True)
-    str_keys = [str(e) for e in news_keys]
-    return  str_keys
+  Returns:
+    A MIME Message, consisting of data from Message.
+  """
+  try:
+    message = service.users().messages().get(userId=user_id, id=msg_id,
+                                             format='raw').execute()
+
+    print('Message snippet: %s' % message['snippet'])
+
+    msg_str = base64.urlsafe_b64decode(message['raw'].encode('ASCII'))
+
+    mime_msg = email.message_from_string(msg_str)
+
+    return mime_msg
+  except errors.HttpError:
+    print('An error occurred: %s' % error)
