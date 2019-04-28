@@ -1,55 +1,32 @@
-import imaplib, email
-
-user = 'hackmx.prueba1@gmail.com'
-password = 'buttercorp'
-imap_url = 'imap.gmail.com'
-
-#Where you want your attachments to be saved (ensure this directory exists) 
-attachment_dir = '/Users/agusquintanar/Desktop/HackMXHackathon'
-# sets up the auth
-def auth(user,password,imap_url):
-    con = imaplib.IMAP4_SSL(imap_url)
-    con.login(user,password)
-    return con
-# extracts the body from the email
-def get_body(msg):
-    if msg.is_multipart():
-        return get_body(msg.get_payload(0))
-    else:
-        return msg.get_payload(None,True)
-# allows you to download attachments
-def get_attachments(msg):
-    for part in msg.walk():
-        if part.get_content_maintype()=='multipart':
-            continue
-        if part.get('Content-Disposition') is None:
-            continue
-        fileName = part.get_filename()
-
-        if bool(fileName):
-            filePath = os.path.join(attachment_dir, fileName)
-            with open(filePath,'wb') as f:
-                f.write(part.get_payload(decode=True))
-#search for a particular email
-def search(key,value,con):
-    result, data  = con.search(None,key,'"{}"'.format(value))
-    return data
-#extracts emails from byte array
-def get_emails(result_bytes):
-    msgs = []
-    for num in result_bytes[0].split():
-        typ, data = con.fetch(num, '(RFC822)')
-        msgs.append(data)
-    return msgs
-
-con = auth(user,password,imap_url)
-con.select('INBOX')
-
-result, data = con.fetch(b'2','(RFC822)')
-raw = email.message_from_bytes(data[0][1])
-get_attachments(raw)
 
 
-mensaje = str(get_body(raw)).replace('\n',"")
-print(mensaje)
 
+import imaplib
+from email.parser import HeaderParser
+M = imaplib.IMAP4_SSL("imap.gmail.com")
+user = "hackmx.prueba1@gmail.com"
+password = "buttercorp"
+M.login(user, password)
+(retcode, messages) = M.sort("DATE", 'UTF-8', 'ALL')
+news_mail = get_mostnew_email(messages)
+for i in news_mail :
+    data = M.fetch(i, '(BODY[HEADER])')
+    header_data = data[1][0][1]
+    parser = HeaderParser()
+    msg = parser.parsestr(header_data)
+    print(msg['subject'])
+
+def get_mostnew_email(messages):
+    """
+    Getting in most recent emails using IMAP and Python
+    :param messages:
+    :return:
+    """
+    ids = messages[0]  # data is a list.
+    id_list = ids.split()  # ids is a space separated string
+    #latest_ten_email_id = id_list  # get all
+    latest_ten_email_id = id_list[-10:]  # get the latest 10
+    keys = map(int, latest_ten_email_id)
+    news_keys = sorted(keys, reverse=True)
+    str_keys = [str(e) for e in news_keys]
+    return  str_keys
