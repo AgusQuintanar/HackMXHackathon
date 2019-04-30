@@ -11,7 +11,7 @@ HackMx is the Student Hackathon organized by the Tecnológico de Monterrey Regio
 
 **Company:** Banorte
 
-**Difficulty:** HALF-HIGH
+**Difficulty:** MEDIUM-HIGH
 
 **Objective:** Use technology to avoid the impact of phishing on end users and prevent theft or digital fraud
 
