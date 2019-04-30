@@ -6,9 +6,8 @@ A Hackathon is a 32-hour development and innovation marathon, where multidiscipl
 
 HackMx is the Student Hackathon organized by the Tecnológico de Monterrey Region of Mexico City and its headquarters are the three campuses of the institution. This event is organized by students and academics from all the campuses of the region.
 
-## Challenge:
+## Challenge: Creating solutions against Phishing
 
-Creating solutions against Phishing
 
 **Company:** Banorte
 
